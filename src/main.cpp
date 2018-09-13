@@ -14,7 +14,7 @@
 #include <iostream>
 
 // a simple user-defined function
-auto user_defined(auto&& x) {
+auto user_defined(auto x) {
   return x + 1;
 }
 
