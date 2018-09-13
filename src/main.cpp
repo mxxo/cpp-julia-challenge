@@ -9,5 +9,5 @@
 #include <omp.h> // ;)
 
 auto main() -> int {
-
+  
 }
