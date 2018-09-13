@@ -10,13 +10,18 @@
 // Exemptions for languages with tiny standard libraries.
 // -> variadic templates are readable right ;)
 
-#include <omp.h> // ;)
+#include <algorithm>
 #include <iostream>
+#include <omp.h> // ;)
+#include <random>
+#include <vector>
 
 // a simple user-defined function
-auto user_defined(auto x) {
+inline auto user_defined(auto x) {
   return x + 1;
 }
+
+#ifndef BENCH
 
 auto main() -> int {
   std::cout << user_defined(2) << std::endl;
@@ -25,3 +30,28 @@ auto main() -> int {
   std::cout << user_defined(i) << std::endl;
   std::cout << i << std::endl;
 }
+
+#else
+#include "benchmark.h"
+// time to beat = 10.171ms
+void BM_materialize(benchmark::State& state){
+  std::random_device rd;
+  std::mt19937 rng(rd());
+  std::uniform_int_distribution<> dist(1,20);
+
+  std::vector<int> data;
+  for (auto _ : state){
+    // materialize();
+    // dummy for now
+    std::generate_n(std::back_inserter(data),
+                    dist(rng),
+                    [&](){ return dist(rng);}
+                   );
+  }
+}
+
+// google benchmark calls
+BENCHMARK(BM_materialize)->Repetitions(5)->ReportAggregatesOnly(true);
+BENCHMARK_MAIN();
+
+#endif
