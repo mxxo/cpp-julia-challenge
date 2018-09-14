@@ -24,26 +24,39 @@ inline auto user_defined(auto x) {
 
 #ifndef BENCH
 
-//scalar case
+// vector overload
+// scalar case
 template<typename T> struct is_vector : public std::false_type {};
-// array of arrays case
+// vector case
 template<typename T, typename A>
 struct is_vector<std::vector<T, A>> : public std::true_type {};
+
+template<typename T> struct is_array : public std::false_type {};
+// array of arrays overload
+template<typename T, typename A>
+struct is_array<std::vector<std::vector<T, A>>> : public std::true_type {};
 
 template <typename T>
 class AbstractArray {
     T arrayType;
     // vector case
-    void broadcast( std::true_type ) {
+    void vec_check( std::true_type ) {
         std::cout << "ya vector" << std::endl;
     }
+    void array_check( std::true_type ) {
+        std::cout << "ya array" << std::endl;
+    }
     // scalar case
-    void broadcast( std::false_type ) {
+    void vec_check( std::false_type ) {
       std::cout << "not vector" << std::endl;
+    }
+    void array_check( std::false_type ) {
+      std::cout << "not array" << std::endl;
     }
 public:
     void broadcast() {
-        broadcast( is_vector<T>{} );
+        vec_check(is_vector<T>{});
+        array_check(is_array<T>{});
     }
 };
 
@@ -65,10 +78,12 @@ auto main() -> int {
   AbstractArray<int> j;
   AbstractArray<std::vector<int>> vj;
   AbstractArray<std::vector<std::vector<int>>> vvj;
+  AbstractArray<std::vector<std::vector<std::vector<int>>>> vvvj;
 
   j.broadcast();
   vj.broadcast();
   vvj.broadcast();
+  vvvj.broadcast();
 }
 ////////////////////////////////////////////////////////////////////////////////
 // to compare impl's let's stop counting sloc here
