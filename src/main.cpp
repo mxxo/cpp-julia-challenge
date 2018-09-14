@@ -24,39 +24,33 @@ inline auto user_defined(auto x) {
 
 #ifndef BENCH
 
-// vector overload
-// scalar case
+// playing around with auto templates
+// template<auto...> struct auto_struct {};
+
+// vector overload - scalar case
 template<typename T> struct is_vector : public std::false_type {};
-// vector case
+// vector overload - vector case
 template<typename T, typename A>
 struct is_vector<std::vector<T, A>> : public std::true_type {};
 
-template<typename T> struct is_array : public std::false_type {};
-// array of arrays overload
-template<typename T, typename A>
-struct is_array<std::vector<std::vector<T, A>>> : public std::true_type {};
-
-template <typename T>
+template <typename Type>
 class AbstractArray {
-    T arrayType;
-    // vector case
-    void vec_check( std::true_type ) {
-        std::cout << "ya vector" << std::endl;
+    constexpr bool vec_check( std::true_type, auto vec ) {
+        std::cout << " found vector " << std::endl;
+        for (auto val : vec){
+          vec_check(is_vector<decltype(val)>{}, val);
+        }
+        return true;
     }
-    void array_check( std::true_type ) {
-        std::cout << "ya array" << std::endl;
-    }
-    // scalar case
-    void vec_check( std::false_type ) {
-      std::cout << "not vector" << std::endl;
-    }
-    void array_check( std::false_type ) {
-      std::cout << "not array" << std::endl;
+    // scalar
+    constexpr bool vec_check( std::false_type, auto val ) {
+      std::cout << " base case: " << val << std::endl;
+      return false;
     }
 public:
-    void broadcast() {
-        vec_check(is_vector<T>{});
-        array_check(is_array<T>{});
+    Type AbstractValue;
+    constexpr void broadcast() {
+      vec_check(is_vector<Type>{}, AbstractValue);
     }
 };
 
@@ -68,22 +62,25 @@ void broadcast(auto x){
 }
 
 auto main() -> int {
-  std::cout << user_defined(2) << std::endl;
-  std::cout << user_defined(3.5) << std::endl;
-  auto i = 1;
-  std::cout << user_defined(i) << std::endl;
-  std::cout << i << std::endl;
-
   // kind of clunky for scalars for sure
   AbstractArray<int> j;
-  AbstractArray<std::vector<int>> vj;
-  AbstractArray<std::vector<std::vector<int>>> vvj;
-  AbstractArray<std::vector<std::vector<std::vector<int>>>> vvvj;
+  j.AbstractValue = 2;
 
-  j.broadcast();
-  vj.broadcast();
-  vvj.broadcast();
-  vvvj.broadcast();
+  AbstractArray<std::vector<double>> vj;
+  vj.AbstractValue = {1.2, 2.3};
+
+  AbstractArray<std::vector<std::vector<int>>> vvj;
+  vvj.AbstractValue = {{1, 2}, {3, 4}};
+
+  AbstractArray<std::vector<std::vector<std::vector<int>>>> vvvj;
+  vvvj.AbstractValue = {{{1, 2}, {3, 4}}, {{1, 2}, {3, 4}}};
+
+  std::cout << "scalar : "; j.broadcast(); std::cout << std::endl;
+  std::cout << "vector : "; vj.broadcast(); std::cout << std::endl;
+  std::cout << "2D-array : "; vvj.broadcast(); std::cout << std::endl;
+  std::cout << "3D-array : "; vvvj.broadcast(); std::cout << std::endl;
+
+  std::cout << "what hath god wrought" << std::endl;
 }
 ////////////////////////////////////////////////////////////////////////////////
 // to compare impl's let's stop counting sloc here
