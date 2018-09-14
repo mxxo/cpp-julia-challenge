@@ -24,7 +24,7 @@ inline auto user_defined(auto x) {
 
 #ifndef BENCH
 
-// c++17 goodness 
+// c++17 goodness
 // template<auto...> struct auto_struct {};
 // compile-time static if with the form if constexpr(expression)
 
@@ -37,30 +37,34 @@ struct is_vector<std::vector<T, A>> : public std::true_type {};
 template <typename Type>
 class AbstractArray {
   Type AbstractValue;
-    constexpr bool vec_check( std::true_type, auto vec ) {
-        std::cout << " found vector " << std::endl;
+    constexpr bool vec_check( std::true_type, auto vec ) const {
+        std::cout << " found vector " << std::endl; // stops constexpr
         for (auto val : vec){
           vec_check(is_vector<decltype(val)>{}, val);
         }
         return true;
     }
     // scalar
-    constexpr bool vec_check( std::false_type, auto val ) {
-      std::cout << " base case: " << val << std::endl;
+    constexpr bool vec_check( std::false_type, auto val ) const {
+      std::cout << " base case: " << val << std::endl; // stops constexpr
       return false;
     }
 public:
-    AbstractArray(Type value) : AbstractValue(std::move(value)) {}
-    constexpr void broadcast() {
-      vec_check(is_vector<Type>{}, AbstractValue);
+    constexpr AbstractArray(Type value) : AbstractValue(std::move(value)) {}
+    constexpr bool broadcast() const {
+      return vec_check(is_vector<Type>{}, AbstractValue);
     }
 };
 
 // materialize is variadic template
-template<typename Func, typename... Args> void materialize();
+template<typename Func, typename... Args>
+void materialize(Func fn, Args... args){
+  // for each Arg,
+  // apply the Func in the proper manner to each elt of that Arg
+}
 
-void broadcast(auto x){
-  x.broadcast();
+bool broadcast(const auto& x){
+  return x.broadcast();
 }
 
 auto main() -> int {
@@ -71,13 +75,18 @@ auto main() -> int {
                 std::vector<
                 std::vector<int>>>> vvvj ({{{1, 2}, {3, 4}}, {{1, 2}, {3, 4}}});
 
-  std::cout << "scalar : "; j.broadcast(); std::cout << std::endl;
-  std::cout << "vector : "; vj.broadcast(); std::cout << std::endl;
-  std::cout << "2D-array : "; vvj.broadcast(); std::cout << std::endl;
-  std::cout << "3D-array : "; vvvj.broadcast(); std::cout << std::endl;
+  std::cout << "--------\nscalar   \n--------\n"; broadcast(j); std::cout << std::endl;
+  std::cout << "--------\nvector   \n--------\n"; vj.broadcast(); std::cout << std::endl;
+  std::cout << "--------\n2D-array \n--------\n"; vvj.broadcast(); std::cout << std::endl;
+  std::cout << "--------\n3D-array \n--------\n"; vvvj.broadcast(); std::cout << std::endl;
 
   std::cout << "what hath god wrought" << std::endl;
+
+  // if constexpr(!broadcast(j)){
+  //   static_assert(true, "not true");
+  // }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 // to compare impl's let's stop counting sloc here
 ////////////////////////////////////////////////////////////////////////////////
