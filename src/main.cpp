@@ -54,10 +54,6 @@ void broadcast(auto x){
   x.broadcast();
 }
 
-// single array case
-
-// scalar case
-
 auto main() -> int {
   std::cout << user_defined(2) << std::endl;
   std::cout << user_defined(3.5) << std::endl;
@@ -74,7 +70,9 @@ auto main() -> int {
   vj.broadcast();
   vvj.broadcast();
 }
-
+////////////////////////////////////////////////////////////////////////////////
+// to compare impl's let's stop counting sloc here
+////////////////////////////////////////////////////////////////////////////////
 #else
 #include "benchmark.h"
 // time to beat = 10.171ms
