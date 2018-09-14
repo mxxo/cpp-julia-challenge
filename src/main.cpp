@@ -35,6 +35,7 @@ struct is_vector<std::vector<T, A>> : public std::true_type {};
 
 template <typename Type>
 class AbstractArray {
+  Type AbstractValue;
     constexpr bool vec_check( std::true_type, auto vec ) {
         std::cout << " found vector " << std::endl;
         for (auto val : vec){
@@ -48,7 +49,7 @@ class AbstractArray {
       return false;
     }
 public:
-    Type AbstractValue;
+    AbstractArray(Type value) : AbstractValue(std::move(value)) {}
     constexpr void broadcast() {
       vec_check(is_vector<Type>{}, AbstractValue);
     }
@@ -62,18 +63,12 @@ void broadcast(auto x){
 }
 
 auto main() -> int {
-  // kind of clunky for scalars for sure
-  AbstractArray<int> j;
-  j.AbstractValue = 2;
-
-  AbstractArray<std::vector<double>> vj;
-  vj.AbstractValue = {1.2, 2.3};
-
-  AbstractArray<std::vector<std::vector<int>>> vvj;
-  vvj.AbstractValue = {{1, 2}, {3, 4}};
-
-  AbstractArray<std::vector<std::vector<std::vector<int>>>> vvvj;
-  vvvj.AbstractValue = {{{1, 2}, {3, 4}}, {{1, 2}, {3, 4}}};
+  AbstractArray<int> j (2);
+  AbstractArray<std::vector<double>> vj ({1.2, 2.3});
+  AbstractArray<std::vector<std::vector<int>>> vvj ({{1, 2}, {3, 4}});
+  AbstractArray<std::vector<
+                std::vector<
+                std::vector<int>>>> vvvj ({{{1, 2}, {3, 4}}, {{1, 2}, {3, 4}}});
 
   std::cout << "scalar : "; j.broadcast(); std::cout << std::endl;
   std::cout << "vector : "; vj.broadcast(); std::cout << std::endl;
