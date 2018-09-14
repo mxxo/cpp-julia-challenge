@@ -24,8 +24,9 @@ inline auto user_defined(auto x) {
 
 #ifndef BENCH
 
-// playing around with auto templates
+// c++17 goodness 
 // template<auto...> struct auto_struct {};
+// compile-time static if with the form if constexpr(expression)
 
 // vector overload - scalar case
 template<typename T> struct is_vector : public std::false_type {};
