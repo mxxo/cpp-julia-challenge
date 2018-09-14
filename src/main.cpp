@@ -14,6 +14,7 @@
 #include <iostream>
 #include <omp.h> // ;)
 #include <random>
+#include <type_traits>
 #include <vector>
 
 // a simple user-defined function
@@ -23,12 +24,55 @@ inline auto user_defined(auto x) {
 
 #ifndef BENCH
 
+//scalar case
+template<typename T> struct is_vector : public std::false_type {};
+// array of arrays case
+template<typename T, typename A>
+struct is_vector<std::vector<T, A>> : public std::true_type {};
+
+template <typename T>
+class AbstractArray {
+    T arrayType;
+    // vector case
+    void broadcast( std::true_type ) {
+        std::cout << "ya vector" << std::endl;
+    }
+    // scalar case
+    void broadcast( std::false_type ) {
+      std::cout << "not vector" << std::endl;
+    }
+public:
+    void broadcast() {
+        broadcast( is_vector<T>{} );
+    }
+};
+
+// materialize is variadic template
+template<typename Func, typename... Args> void materialize();
+
+void broadcast(auto x){
+  x.broadcast();
+}
+
+// single array case
+
+// scalar case
+
 auto main() -> int {
   std::cout << user_defined(2) << std::endl;
   std::cout << user_defined(3.5) << std::endl;
   auto i = 1;
   std::cout << user_defined(i) << std::endl;
   std::cout << i << std::endl;
+
+  // kind of clunky for scalars for sure
+  AbstractArray<int> j;
+  AbstractArray<std::vector<int>> vj;
+  AbstractArray<std::vector<std::vector<int>>> vvj;
+
+  j.broadcast();
+  vj.broadcast();
+  vvj.broadcast();
 }
 
 #else
